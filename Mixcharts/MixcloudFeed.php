@@ -4,9 +4,11 @@ namespace Mixcharts;
 
 class MixcloudFeed {
 	private $user;
+	private $client;
 	
-	function __construct($user) {
+	function __construct($user, MixcloudClient $client) {
 		$this->user = $user;
+		$this->client = $client;
 	}
 	
 	function addAllMixesToChart(TrackChart $chart) {
@@ -17,7 +19,7 @@ class MixcloudFeed {
 	}
 
 	function getCloudcastPage() {
-		return new CloudcastPage($this->user);
+		return new CloudcastPage($this->user, $this->client);
 	}
 	
 	function addMixesToChart($mixes, TrackChart $chart) {
@@ -27,10 +29,7 @@ class MixcloudFeed {
 	}
 	
 	function addTracksToChart($mixslug, TrackChart $chart) {
-		$url = "https://api.mixcloud.com{$mixslug}?access_token=" . ACCESS_TOKEN;
-		debug("Fetching $url");
-		$json = file_get_contents($url);
-		$data = json_decode($json);
+		$data = $this->client->getUrl($mixslug);
 		foreach($data->sections as $s) {
 			if($s->section_type == 'track') {
 				$track = new Track($s->track->artist->name, $s->track->name);

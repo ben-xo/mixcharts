@@ -3,19 +3,23 @@
 namespace Mixcharts;
 
 spl_autoload_register( function($class) { include str_replace('\\', DIRECTORY_SEPARATOR, $class).'.php'; } );
-function debug($s) { echo "$s\n"; }
 
-$options = getopt('', ['token:', 'user:']);
+$options = getopt('', ['token:', 'user:', 'cutoff:']);
 
 if(!isset($options['token']) || !isset($options['user'])) {
 	echo "Requires --token and --user\n";
 	exit -1;
 }
 
-define('ACCESS_TOKEN', $options['token']);
-
 $chart = new TrackChart();
-$f = new MixcloudFeed($options['user']);
+
+if($options['cutoff']) {
+	$chart->setCutoff($options['cutoff']);
+}
+
+$client = new CachingMixcloudClient("cache", $options['token']);
+$f = new MixcloudFeed($options['user'], $client);
 $f->addAllMixesToChart($chart);
 
-echo $chart;
+$chart->sort();
+echo $chart->toTSV();
