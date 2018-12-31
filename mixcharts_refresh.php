@@ -16,21 +16,14 @@ if (! isset($options['token']) || ! isset($options['user'])) {
     exit(-1);
 }
 
-$chart = new TrackChart();
 $db = new MixcloudDB('mixcharts.db');
 if(!$db->connect()) {
     echo "Couldn't open mixcharts.db\n";
     exit(-2);
 }
 
-if (isset($options['cutoff'])) {
-    $chart->setCutoff($options['cutoff']);
-}
-
 $client = new CachingMixcloudClient("cache", $options['token']);
 $f = new MixcloudFeed($options['user'], $client);
 $f->addAllMixesToDB($db);
-$f->addAllMixesToChart($chart);
 
-$chart->sort();
-echo $chart->toTSV();
+echo "Done!\n";

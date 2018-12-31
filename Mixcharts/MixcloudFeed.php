@@ -11,6 +11,8 @@ class MixcloudFeed {
 		$this->client = $client;
 	}
 	
+	function debug($s) { echo "$s\n"; }
+	
 	function addAllMixesToChart(TrackChart $chart) {
 		$feedPage = $this->getCloudcastPage();
 		do {
@@ -18,6 +20,13 @@ class MixcloudFeed {
 		} while($feedPage = $feedPage->getNextPage());
 	}
 
+	function addAllMixesToDB(MixcloudDB $db) {
+	    $feedPage = $this->getCloudcastPage();
+	    do {
+	        $this->addMixesToDB($feedPage->getCloudcasts(), $db);
+	    } while($feedPage = $feedPage->getNextPage());
+	}
+	
 	function getCloudcastPage() {
 		return new CloudcastPage($this->user, $this->client);
 	}
@@ -28,6 +37,16 @@ class MixcloudFeed {
 		}
 	}
 	
+	function addMixesToDB($mixes, MixcloudDB $db) {
+	    $total_tracks_added = 0;
+	    $total_mixes_added = 0;
+	    foreach($mixes as $mix) {
+	        $total_tracks_added += $this->addMixToDB($mix, $db);
+	        $total_mixes_added++;
+	    }
+	    $this->debug("Added $total_mixes_added mixes and $total_tracks_added tracks to DB (some or all may already have been present)");
+	}
+	
 	function addTracksToChart($mixslug, TrackChart $chart) {
 		$data = $this->client->getUrl($mixslug);
 		foreach($data->sections as $s) {
@@ -36,5 +55,29 @@ class MixcloudFeed {
 				$chart->addTrack($track);
 			}
 		}
+	}
+	
+	function addMixToDB($mixslug, MixcloudDB $db) {
+	    if($mix_data = $db->getMix($mixslug)) {
+	        return 0;
+	    }
+	    $mix_data = $this->client->getUrl($mixslug);
+	    $db->addMix($mixslug, $mix_data->name);
+	    return $this->addTracksToDB($mixslug, $db, $mix_data);
+	}
+	
+	function addTracksToDB($mixslug, MixcloudDB $db, $mix_data) {
+	    if(!$mix_data) {
+	        $mix_data = $this->client->getUrl($mixslug);
+	    }
+	    $track_count = 0;
+	    foreach($mix_data->sections as $s) {
+	        if($s->section_type == 'track') {
+	            $track = new Track($s->track->artist->name, $s->track->name);
+	            $db->addTrackToMix($mixslug, $track);
+	            $track_count++;
+	        }
+	    }
+	    return $track_count;
 	}
 }

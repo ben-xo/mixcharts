@@ -8,7 +8,7 @@ class TrackChart {
 	
 	public function addTrack(Track $track) {
 		$key = $track->getKey();
-		if($this->trackChartEntries[$key]) {
+		if(isset($this->trackChartEntries[$key])) {
 			$this->trackChartEntries[$key]->incr();
 		} else {
 			$this->trackChartEntries[$key] = new TrackChartEntry($track);
