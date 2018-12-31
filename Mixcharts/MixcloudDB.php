@@ -57,7 +57,14 @@ class MixcloudDB {
     }
     
     public function getMixesWithTracksLike($term) {
-        $stmt = $this->pdo->prepare('SELECT slug, name, tim.artist as artist, tim.title as title FROM mix LEFT JOIN track_in_mix tim ON mix.slug=tim.mix WHERE artist LIKE ? OR title LIKE ? AND tim.artist IS NOT NULL');
+        $stmt = $this->pdo->prepare(
+            'SELECT slug, name, tim.artist AS artist, tim.title AS title 
+             FROM mix 
+             LEFT JOIN track_in_mix tim ON mix.slug=tim.mix 
+             WHERE (artist LIKE ? OR title LIKE ?) 
+               AND tim.artist IS NOT NULL
+             ORDER BY slug DESC, artist, title'
+        );
         $stmt->bindValue(1, "%$term%", \PDO::PARAM_STR);
         $stmt->bindValue(2, "%$term%", \PDO::PARAM_STR);
         $stmt->execute();
