@@ -24,6 +24,7 @@ if(!$db->connect()) {
 
 $client = new CachingMixcloudClient("cache", $options['token']);
 $f = new MixcloudFeed($options['user'], $client);
+$client->uncache($f->getCloudcastPage()->getFirstPageURL()); // otherwise it won't pick up new mixes.
 $f->addAllMixesToDB($db);
 
 echo "Done!\n";
