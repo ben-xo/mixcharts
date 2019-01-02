@@ -80,6 +80,24 @@ class MixcloudDB {
         return $tracks_in_mixes;
     }
 
+    public function getMixesWithNestedTracks($term) {
+        $tracks_in_mixes = $this->getMixesWithTracksLike($term);
+        $mixes = [];
+        foreach ($tracks_in_mixes as $track_in_mix) {
+            if(!isset($mixes[$track_in_mix['name']])) {
+                $mixes[$track_in_mix['name']] = [
+                    'slug' => $track_in_mix['slug'],
+                    'tracks' => [],
+                ];
+            }
+            $mixes[$track_in_mix['name']]['tracks'][] = [
+                'artist' => $track_in_mix['artist'],
+                'title' => $track_in_mix['title'],
+            ];
+        }
+        return $mixes;
+    }
+
     public function getDistinctMixesWithTracksLike($term) {
         $stmt = $this->pdo->prepare(
             'SELECT DISTINCT slug, name
