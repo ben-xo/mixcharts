@@ -11,11 +11,12 @@ class CloudcastPage {
 		$this->user = $user;
 		$this->client = $client;
 		if ($url == '') {
-			$this->url = "https://api.mixcloud.com/{$this->user}/cloudcasts/";
+			$this->url = $this->getFirstPageURL();
 		} else {
 			$this->url = $url;
 		}
 	}
+
 	function getCloudcasts() {
 		$data = $this->client->getUrl( $this->url );
 		
@@ -26,11 +27,16 @@ class CloudcastPage {
 		$cloudcasts = array ();
 		
 		foreach ( $data->data as $mix ) {
-			$cloudcasts [] = "https://api.mixcloud.com/{$mix->key}";
+			$cloudcasts [] = "https://api.mixcloud.com{$mix->key}";
 		}
 		
 		return $cloudcasts;
 	}
+
+	function getFirstPageURL() {
+		return "https://api.mixcloud.com/{$this->user}/cloudcasts/";
+	}
+
 	function getNextPage() {
 		if ($this->next) {
 			return new CloudcastPage ( $this->user, $this->client, $this->next);

@@ -79,7 +79,28 @@ class MixcloudDB {
         }
         return $tracks_in_mixes;
     }
-    
+
+    public function getDistinctMixesWithTracksLike($term) {
+        $stmt = $this->pdo->prepare(
+            'SELECT DISTINCT slug, name
+             FROM mix 
+             LEFT JOIN track_in_mix tim ON mix.slug=tim.mix 
+             WHERE (artist LIKE ? OR title LIKE ?) 
+               AND tim.artist IS NOT NULL
+             ORDER BY slug DESC'
+        );
+        $stmt->bindValue(1, "%$term%", \PDO::PARAM_STR);
+        $stmt->bindValue(2, "%$term%", \PDO::PARAM_STR);
+        $stmt->execute();
+        $tracks_in_mixes = [];
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $tracks_in_mixes[] = [
+                'slug' => $row['slug'],
+                'name' => $row['name'],
+            ];
+        }
+        return $tracks_in_mixes;
+    }    
     public function isTrackOnMix(Track $track, $slug) {
         $stmt = $this->pdo->prepare('SELECT COUNT(1) FROM track_in_mix WHERE artist = :artist AND title = :title AND mix = :slug');
         $stmt->execute([':slug' => $slug, ':artist' => $track->getArtist(), ':title' => $track->getTitle()]);
