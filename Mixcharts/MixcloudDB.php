@@ -43,8 +43,8 @@ class MixcloudDB {
     }
 
     public function getMixesLike($term) {
-        $stmt = $this->pdo->prepare('SELECT slug, name FROM mix WHERE name LIKE ?');
-        $stmt->bindValue(1, '%$term%', \PDO::PARAM_STR);
+        $stmt = $this->pdo->prepare('SELECT slug, name FROM mix WHERE name LIKE ? ORDER BY published DESC');
+        $stmt->bindValue(1, "%$term%", \PDO::PARAM_STR);
         $stmt->execute();
         $mixes = [];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
@@ -58,12 +58,12 @@ class MixcloudDB {
     
     public function getMixesWithTracksLike($term) {
         $stmt = $this->pdo->prepare(
-            'SELECT slug, name, tim.artist AS artist, tim.title AS title 
+            'SELECT slug, name, published, tim.artist AS artist, tim.title AS title 
              FROM mix 
              LEFT JOIN track_in_mix tim ON mix.slug=tim.mix 
              WHERE (artist LIKE ? OR title LIKE ?) 
                AND tim.artist IS NOT NULL
-             ORDER BY slug DESC, artist, title'
+             ORDER BY published DESC, slug, artist, title'
         );
         $stmt->bindValue(1, "%$term%", \PDO::PARAM_STR);
         $stmt->bindValue(2, "%$term%", \PDO::PARAM_STR);
@@ -73,6 +73,7 @@ class MixcloudDB {
             $tracks_in_mixes[] = [
                 'slug' => $row['slug'],
                 'name' => $row['name'],
+                'published' => $row['published'],
                 'artist' => $row['artist'],
                 'title' => $row['title'],
             ];
@@ -87,6 +88,7 @@ class MixcloudDB {
             if(!isset($mixes[$track_in_mix['name']])) {
                 $mixes[$track_in_mix['name']] = [
                     'slug' => $track_in_mix['slug'],
+                    'published' => $track_in_mix['published'],
                     'tracks' => [],
                 ];
             }
@@ -105,7 +107,7 @@ class MixcloudDB {
              LEFT JOIN track_in_mix tim ON mix.slug=tim.mix 
              WHERE (artist LIKE ? OR title LIKE ?) 
                AND tim.artist IS NOT NULL
-             ORDER BY slug DESC'
+             ORDER BY published DESC, slug'
         );
         $stmt->bindValue(1, "%$term%", \PDO::PARAM_STR);
         $stmt->bindValue(2, "%$term%", \PDO::PARAM_STR);
@@ -126,9 +128,9 @@ class MixcloudDB {
         return $count > 0;
     }
     
-    public function addMix($slug, $name) {
-        $stmt = $this->pdo->prepare('INSERT OR IGNORE INTO mix VALUES (:slug, :name)');
-        $stmt->execute([':slug' => $slug, ':name' => $name]);
+    public function addMix($slug, $name, $published) {
+        $stmt = $this->pdo->prepare('INSERT OR IGNORE INTO mix VALUES (:slug, :name, :published)');
+        $stmt->execute([':slug' => $slug, ':name' => $name, ':published' => $published]);
     }
     
     public function addTrackToMix($slug, Track $track) {
