@@ -8,7 +8,6 @@ spl_autoload_register(function ($class) {
 $options = getopt('', [
     'token:',
     'user:',
-    'cutoff:'
 ]);
 
 if (! isset($options['token']) || ! isset($options['user'])) {
