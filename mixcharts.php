@@ -29,7 +29,7 @@ if (isset($options['cutoff'])) {
 
 $client = new CachingMixcloudClient("cache", $options['token']);
 $f = new MixcloudFeed($options['user'], $client);
-$f->addAllMixesToDB($db);
+$client->uncache($f->getCloudcastPage()->getFirstPageURL()); // otherwise it won't pick up new mixes.
 $f->addAllMixesToChart($chart);
 
 $chart->sort();
