@@ -20,6 +20,29 @@ class MixcloudFeed {
 		} while($feedPage = $feedPage->getNextPage());
 	}
 
+	function dumpAllComments() {
+		$feedPage = $this->getCloudcastPage();
+		do {
+			$this->dumpMixPageComments($feedPage->getCloudcasts());
+		} while($feedPage = $feedPage->getNextPage());
+	}
+
+	function dumpMixPageComments($mixes) {
+		foreach($mixes as $mix) {
+			$this->dumpMixComments($mix);
+		}
+	}
+
+	function dumpMixComments($mixslug) {
+		$data = $this->client->getUrl("${mixslug}comments/");
+		foreach($data->data as $c) {
+			echo "$mixslug\n";
+			echo "{$c->user->name}\n";
+			echo "{$c->submit_date}\n";
+			echo "{$c->comment}\n\n";
+		}
+	}
+
 	function addAllMixesToDB(MixcloudDB $db) {
 	    $feedPage = $this->getCloudcastPage();
 	    do {
