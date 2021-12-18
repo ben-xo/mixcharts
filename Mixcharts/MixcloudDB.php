@@ -46,13 +46,21 @@ class MixcloudDB
         return null;
     }
 
-    public function getTopMixesBy($metric, $cutoff)
+    public function getTopMixesBy($metric, $cutoff, $metric2=null)
     {
         if (!$cutoff) {
             $cutoff = 10;
         }
+        
         $metric = preg_replace('/[^a-z]/', '', $metric);
-        $stmt = $this->pdo->prepare("SELECT * FROM mix ORDER BY {$metric}_count DESC LIMIT :cutoff");
+        $order = $metric . '_count';
+        
+        if ($metric2) {
+            $metric2 = preg_replace('/[^a-z]/', '', $metric2);
+            $order = "CAST($order AS FLOAT) / CAST({$metric2}_count AS FLOAT)";
+        }
+
+        $stmt = $this->pdo->prepare("SELECT $order as metric, * FROM mix ORDER BY $order DESC LIMIT :cutoff");
         $stmt->execute([
             ':cutoff' => $cutoff
         ]);

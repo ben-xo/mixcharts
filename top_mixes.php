@@ -7,6 +7,7 @@ spl_autoload_register(function ($class) {
 
 $options = getopt('', [
     'metric:',
+    'metric2:',
     'cutoff:'
 ]);
 
@@ -21,5 +22,9 @@ if(!$db->connect()) {
     exit(-2);
 }
 
-var_dump($db->getTopMixesBy($options['metric'], $options['cutoff']));
+$mixes = $db->getTopMixesBy($options['metric'], $options['cutoff'], $options['metric2']);
+foreach($mixes as $mix) {
+    
+    echo Mix::fromDBRow($mix). " (score: {$mix['metric']})\n";
+}
 
