@@ -85,7 +85,8 @@ class MixcloudFeed {
 	        return 0;
 	    }
 	    $mix_data = $this->client->getUrl($mixslug);
-	    $db->addMix($mixslug, $mix_data->name, $mix_data->created_time);
+	    $mix = Mix::fromJson($slug, $mix_data);
+	    $db->addMix($mix);
 	    return $this->addTracksToDB($mixslug, $db, $mix_data);
 	}
 	
