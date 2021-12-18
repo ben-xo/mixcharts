@@ -48,7 +48,7 @@ class Mix {
         $this->comment_count    = $mix_data->comment_count;
     }
     
-	public function getSlug()
+    public function getSlug()
     {
         return $this->slug;
     }
@@ -88,7 +88,7 @@ class Mix {
         return $this->comment_count;
     }
 
-	public function __toString() {
-		return "Mix[{$this->name} :: p:{$this->play_count} l:{$this->listener_count} f:{$this->favorite_count} r:{$this->repost_count} c:{$this->comment_count}]";
-	}
+    public function __toString() {
+        return "Mix[{$this->name} :: p:{$this->play_count} l:{$this->listener_count} f:{$this->favorite_count} r:{$this->repost_count} c:{$this->comment_count}]";
+    }
 }
